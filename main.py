@@ -13,10 +13,10 @@ import time
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Application, CommandHandler, ConversationHandler, CallbackQueryHandler, CallbackContext
 
-# Константы для этапов разговора в Telegram
+
 CHOOSE_COURIER, REPORT,CHOOSING, SURCHARGE = range(4)
 
-# Глобальный список курьеров
+
 couriers = []
 driver = None
 
@@ -25,13 +25,13 @@ driver = None
 def setup_driver():
     global driver
     chrome_options = Options()
-    chrome_options.add_argument("--headless=new")  # Новый headless режим
+    chrome_options.add_argument("--headless=new")  
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-blink-features=AutomationControlled")
     chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.131 Safari/537.36")
     
-    # Маскировка Selenium
+
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
     driver.execute_cdp_cmd("Page.addScriptToEvaluateOnNewDocument", {
         "source": """
@@ -79,8 +79,8 @@ def fetch_timesheet_data(date=None):
     driver.get(url)
     print(f"Загрузка страницы для парсинга: {url}")
 
-    # Замените time.sleep на asyncio.sleep
-    time.sleep(1)  # Даем время странице загрузиться
+
+    time.sleep(1)  
 
     soup = BeautifulSoup(driver.page_source, 'html.parser')
 
@@ -294,13 +294,13 @@ async def current(update: Update, context: CallbackContext) -> None:
     courier = context.user_data['courier']
     surcharge = context.user_data['surcharge']
 
-    # Поиск актуальных данных для выбранного курьера
+
     selected_courier = next((c for c in couriers if c[0] == courier[0]), None)
     if not selected_courier:
         await update.message.reply_text("Ошибка: выбранный курьер не найден в актуальных данных.")
         return
 
-    # Обработка актуальных данных
+
     current_time = datetime.now().strftime('%H:%M')
     current_load, total_load = calculate_load(selected_courier[3],selected_courier[1], selected_courier[2], current_time, selected_courier[4])
     earnings = calculate_earnings(selected_courier[3], selected_courier[1], selected_courier[2], selected_courier[4], surcharge)
@@ -421,10 +421,10 @@ def generate_current_week_report(courier_name):
 
 def main():
     setup_driver()
-    login_to_site("9377042875", "82424011")
-    application = Application.builder().token("7114415477:AAEgVkm-owK9TbN9yArGhjG_nN0MsYH4ses").build()
+    login_to_site("9377042815", "82424021")
+    application = Application.builder().token("7114415477:AAEgVkm-owKs9TbN9yArGhjG_nN0MsYH4es").build()
 
-        # Добавление ConversationHandler для команд /start и /week
+
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler('start', start)],
         states={
@@ -447,10 +447,10 @@ def main():
     application.add_handler(conv_handler)
     application.add_handler(CommandHandler('current', current))
 
-    # Запуск функции для периодического обновления данных о курьерах
+
     application.job_queue.run_repeating(update_couriers_data, interval=20, first=1)
 
-    # Запуск бота
+
     application.run_polling()
 
 if __name__ == '__main__':
